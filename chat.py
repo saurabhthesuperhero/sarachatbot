@@ -8,7 +8,7 @@ client = Wit(access_token)
 # # print('res is '+str(res))
 
 def check_intent(obj,key,name):
-	if key not in obj:
+	if key not in obj[0]:
 		return None
 	if obj[0][key]==name:
 		return 1
@@ -33,10 +33,14 @@ def first_entityvalue(obj, key):
     return val
 
 def translate(text,language):
-	translator = Translator()
-	x=translator.translate(text, dest=language)
-	return "{0} \n This is how you will say {1} in {2} ".format(x.text,text,language)
+	try:
 
+		translator = Translator()
+		x=translator.translate(text, dest=language)
+		return " '{0}' \n This is how you will say {1} in {2} \n & Pronounciation is '{3}'".format(x.text,text,language,x.pronunciation)
+
+	except Exception as e:
+		return "I didnt get destination language."
 def handle_message(response):
 	print(json.dumps(json.loads(json.dumps(response)),indent=2))
 	greeting=first_value(response['traits'], 'wit$greetings')
@@ -45,35 +49,21 @@ def handle_message(response):
 
 # translate wala
 	checktranslate=check_intent(response['intents'],'name','phrase_translate')
+	# print(checktranslate)
 	tbody=first_value(response['entities'],'wit$phrase_to_translate:phrase_to_translate')
 	tlanguage=first_value(response['entities'],'wit$message_subject:message_subject')
 	
-	if greeting:
-		return "Hi u can ask me to translate anything "
+	if checktranslate:
+		return translate(tbody,tlanguage)
 	elif typeof!=None:
 		 if typeof.lower()=="movie":
 		 	return "Movie you can watch"
 	elif bye:
 		return "Bye see you later"
-	elif checktranslate:
-		return translate(tbody,tlanguage)
-
+	elif greeting:
+		return "Hi ask me to translate"
 	else:
 		return "........oooooo"
-    # traits = response['traits']
-    # get_joke = first_value(traits, 'get_recommendation')
-    # greetings = first_value(traits, 'wit$greetings')
-    # category = first_value(response['entities'], 'category:category')
-    # sentiment = first_value(traits, 'wit$sentiment')
-
-    # if get_joke:
-    #     return select_joke(category)
-    # elif sentiment:
-    #     return 'Glad you liked it.' if sentiment == 'positive' else 'Hmm.'
-    # elif greetings:
-    #     return 'Hey this is joke bot :)'
-    # else:
-    #     return 'I can tell jokes! Say "tell me a joke about tech"!'
 
 
 
